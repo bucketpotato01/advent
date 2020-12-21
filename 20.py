@@ -70,6 +70,13 @@ for i in range(len(f)):
 
 	#print(edges[i])
 
+def crop(img):
+	img = img[1:-1]
+	for i in range(len(img)):
+		img[i].pop(-1)
+		img[i].pop(0)
+	return img
+
 ans = 1
 corner = -1
 for i in range(len(f)):
@@ -82,11 +89,131 @@ for i in range(len(f)):
 				break
 
 	if len(adj[i]) > 4 or len(adj[i]) <= 2:
-		print(adj[i])
+		#print(adj[i])
 		ans *= int(f[i][0].split(" ")[1])
 		corner = i
 
 
+fin = [[[] for i in range(40)] for i in range(40)]
+done = [False for i in f]
+fin[20][20] = f[corner][1]
+done[corner] = True
+#print(fin[20][20])
+
+
+
+q = adj[corner]
+
+while len(q) > 0:
+	thisone = q.pop(0)
+	matched = False
+	done[thisone] = True
+	for i in range(len(fin)):
+		if matched:
+			break
+		for j in range(len(fin)):
+			if matched:
+				break
+			if fin[i][j] == []:
+				continue
+
+
+			for rot in range(0, 4):
+				if matched:
+					break
+				for fh in range(0, 2):
+					if matched:
+						break
+					for fv in range(0, 2):
+						if matched:
+							break
+						temp = f[thisone][1]
+						for k in range(rot):
+							temp = d90(temp)
+						if fh == 1:
+							temp = fliph(temp)
+						if fv == 1:
+							temp = flipv(temp)
+
+						if temp[0] == fin[i][j][-1]:
+							fin[i+1][j] = temp
+							matched = True
+
+						elif [k[0] for k in (temp)] == [k[-1] for k in fin[i][j]]:
+							fin[i][j+1] = temp
+							matched = True
+
+						elif [k[-1] for k in (temp)] == [k[0] for k in fin[i][j]]:
+							fin[i][j-1] = temp
+							matched = True
+
+						elif temp[-1] == fin[i][j][0]:
+							fin[i-1][j] = temp
+							matched = True
+	#print(thisone, matched)
+	for i in adj[thisone]:
+		if i not in q and not done[i]:
+			q.append(i)
+
+image = []
+
+for i in range(40):
+	thisrow = []
+	for j in range(40):
+		if fin[i][j] != []:
+			thisrow.append(crop(fin[i][j]))
+
+	if thisrow == []:
+		continue
+
+	for j in range(len(thisrow[0])):
+		image.append([])
+		for k in range(len(thisrow)):
+			image[-1] = image[-1] + thisrow[k][j]
+
+
+seamonster = [[j for j in i] for i in "                  # \n#    ##    ##    ###\n #  #  #  #  #  #   ".split("\n")]
+print(seamonster)
+def matchmonster(grid, i, j, seamonster):
+
+	
+	for x in range(len(seamonster)):
+		for y in range(len(seamonster[x])):
+			if seamonster[x][y] != "#":
+				continue
+
+			#print(x,y)
+			if i+x >= len(grid) or j+y >= len(grid[i+x]):
+				return False
+			if grid[i+x][j+y] != "#":
+				return False
+
+	return True
+
+seasize = sum([len([i for i in j if i == "#"]) for j in seamonster])
+print(seasize)
+
+for j in range(4):
+	for k in range(2):
+		for l in range(2):
+			temp = image
+			for n in range(j):
+				temp = d90(temp)
+			if k == 1:
+				temp = fliph(temp)
+			if l == 1:
+				temp = flipv(temp)
+
+			seamonsters = 0
+			spaces = 0
+			for i in range(len(image)):
+				for j in range(len(image)):
+					if matchmonster(temp, i, j, seamonster):
+						seamonsters += 1
+					if temp[i][j] == "#":
+						spaces += 1
+
+			print(spaces - seasize * seamonsters)
 
 
 
