@@ -4,161 +4,58 @@ f = f.read()
 
 f = [int(i) for i in f]
 
-print(f)
 
 ind = 0
 
 totnums = 1000000
 
 a = max(f)
-for i in range(a+1, totnums+1):
-	f.append(i)
 
-sq = int(totnums**0.5)
+ptrs = [0] + [(i+2) for i in range(totnums)]
+ptrs[-1] = f[0]
 
-currind = {}
+for i in range(1, len(f)):
+	ptrs[f[i-1]] = f[i]
 
-def redistribute():
-	global f, currind
-	currind = {}
-	newf = []
-	for i in f:
-		if type(i) == int:
-			newf.append(i)
-			continue
-		for j in i:
-			newf.append(j)
-
-	f = []
-	for j in range(len(newf)):
-		if j % sq == 0:
-			f.append([])
-		f[-1].append(newf[j])
-		currind[newf[j]] = len(f)-1
-
-
-def get(ind):
-	global f, currind
-	curr = 0
-	cind = 0
-	while True:
-		if curr + len(f[cind]) > ind:
-			break
-		curr += len(f[cind])
-		cind += 1
-	temp = ind - curr
-	return f[cind][temp]
-
-def rem(ind):
-	global f, currind
-	curr = 0
-	cind = 0
-	while True:
-		if curr + len(f[cind]) > ind:
-			break
-		curr += len(f[cind])
-		cind += 1
-	temp = ind - curr
-	f[cind].pop(temp)
-
-def getind(elem):
-	global f, currind
-	a = currind[elem]
-	previ = 0
-	for i in range(a):
-		previ += len(f[i])
-	return previ + f[a].index(elem)
-
-def putin(ind, elem):
-	global f, currind
-	curr = 0
-	cind = 0
-	while True:
-		#print(cind, curr)
-		if curr + len(f[cind]) > ind or cind == len(f)-1:
-			break
-		curr += len(f[cind])
-		cind += 1
-	temp = ind - curr
-	f[cind].insert(temp, elem)
-	currind[elem] = cind
-
-
-
-
-
+ptrs[f[-1]] = a+1
 
 moves = 10000000
-redistribute()
+
+curr = f[0]
 for i in range(moves):
-	#print()
-	if i%sq == 0:
-		redistribute()
-		print("itearation",i)
-	#print(f)
-	#print(ind)
-	#print(f)
-	thiscup = get(ind)
-	#print("chose",thiscup)
-
-	l = []
-	d = 0
-	for j in range(ind+1, ind+4):
-		l.append(j%totnums)
-		
-	
-	l = l[::-1]
-
 	picked = []
-	for j in l:
-		picked = [get(j)] + picked
-	l = sorted(l)[::-1]
+	temp = curr
 
-	#print(picked)
-	ind += d
+	for j in range(3):
+		temp = ptrs[temp]
+		picked.append(temp)
 
-	for j in l:
-		rem(j)
+	nextcup = curr - 1
+	while nextcup in picked or nextcup == 0:
+		nextcup = (nextcup - 1 + totnums+1) % (totnums+1)
 
-	#print(picked)
+	#print(ptrs, picked, nextcup)
 
+	ptrs[curr] = ptrs[temp]
+	picked = picked[::-1]
 
-	lab = thiscup - 1
-	while lab in picked or lab == 0:
-		#print("temp:",lab)
-		lab = (lab - 1 + totnums + 1) % (totnums + 1)
+	temp = ptrs[nextcup]
+	for j in picked:
+		ptrs[j] = temp
+		temp = j
+	ptrs[nextcup] = temp
 
-	#print("lab", lab)
+	curr = ptrs[curr]
 
-	newind = getind(lab)
-
-	for j in range(len(picked)):
-		putin(newind+j+1,picked[j])
-
-	#f = f[:newind+1] + picked + f[newind+1:]
-
-	#print("thiscup", thiscup)
-	ind = getind(thiscup)
-	ind = (ind + 1) % totnums
-	#print(f)
+	if i % 10000 == 0:
+		print(i)
 
 
-'''
-ans = ""
-for i in range(ind,len(f)):
-	ans = ans + str(f[i])
-for i in range(ind):
-	ans = ans + str(f[i])
+n1 = ptrs[1]
+n2 = ptrs[n1]
+print(n1, n2, n1*n2)
 
-print(ans)
-'''
 
-fin = []
-for i in f:
-	for j in i:
-		fin.append(j)
+	
 
-a = open("save.txt", "w")
-a.write(str(fin))
-a.close()
 
